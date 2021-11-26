@@ -85,7 +85,7 @@ internal final class CustomToolTipWindow: NSWindow {
         )
 
         let border = BorderedView(frame: borderFrame)
-        self.borderColor = borderColor
+        border.borderColor = borderColor
         border.addSubview(toolTipView)
 
         super.init(
