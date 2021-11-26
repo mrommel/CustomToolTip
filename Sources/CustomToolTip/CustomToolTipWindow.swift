@@ -249,8 +249,8 @@ internal final class CustomToolTipWindow: NSWindow {
 
             if self.borderCornerRadius > 0.0 {
                 self.wantsLayer = true
-                self.layer.masksToBounds = true
-                self.layer.cornerRadius = self.borderCornerRadius
+                self.layer?.masksToBounds = true
+                self.layer?.cornerRadius = self.borderCornerRadius
             }
 
             guard let context = NSGraphicsContext.current?.cgContext else {
