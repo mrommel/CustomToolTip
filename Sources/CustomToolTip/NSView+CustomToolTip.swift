@@ -164,7 +164,7 @@ public extension NSView {
 
     // -------------------------------------
     /**
-     Get/Set the margins for the tool tip's content within the tool tip window.
+     Get/Set the background color for the tool tip's content within the tool tip window.
      */
     var customToolTipBackgroundColor: NSColor {
         get {
@@ -174,6 +174,21 @@ public extension NSView {
         set {
             var control = toolTipControl ?? ToolTipControl(hostView: self)
             control.toolTipBackgroundColor = newValue
+            toolTipControl = control
+        }
+    }
+
+    /**
+     Get/Set the border color for the tool tip's content within the tool tip window.
+     */
+    var customToolTipBorderColor: NSColor {
+        get {
+            toolTipControl?.toolTipBorderColor
+                ?? CustomToolTip.defaultBorderColor
+        }
+        set {
+            var control = toolTipControl ?? ToolTipControl(hostView: self)
+            control.toolTipBorderColor = newValue
             toolTipControl = control
         }
     }
@@ -215,6 +230,7 @@ public extension NSView {
                 for: self,
                 margins: control.toolTipMargins,
                 backgroundColor: control.toolTipBackgroundColor,
+                borderColor: control.toolTipBorderColor,
                 mouseLocation: control.mouseLocation
             )
         }

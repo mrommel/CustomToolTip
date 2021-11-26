@@ -17,7 +17,7 @@ internal struct ToolTipControl {
     }
 
     /// View to which the custom tool tip is attached
-    weak var onwerView: NSView?
+    weak var ownerView: NSView?
 
     /// The content view of the tool tip
     var toolTipView: NSView?
@@ -44,12 +44,14 @@ internal struct ToolTipControl {
     /// Tool tip window's background color
     var toolTipBackgroundColor: NSColor = CustomToolTip.defaultBackgroundColor
 
+    var toolTipBorderColor: NSColor = CustomToolTip.defaultBorderColor
+
     init(
         mouseEntered: Date? = nil,
         hostView: NSView,
         toolTipView: NSView? = nil) {
         self.mouseEntered = mouseEntered
-        self.onwerView = hostView
+        self.ownerView = hostView
         self.toolTipView = toolTipView
     }
 }

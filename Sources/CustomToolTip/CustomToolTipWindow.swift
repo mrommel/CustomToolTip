@@ -1,4 +1,5 @@
 import AppKit
+import CoreGraphics
 
 public var defaultMargins: CGSize = CGSize(width: 5, height: 5)
 public var defaultBackgroundColor: NSColor = .windowBackgroundColor
@@ -86,6 +87,7 @@ internal final class CustomToolTipWindow: NSWindow {
         )
 
         let border = BorderedView(frame: borderFrame)
+        border.backgroundColor = backgroundColor
         border.borderColor = borderColor
         border.borderCornerRadius = defaultBorderCornerRadius
         border.addSubview(toolTipView)
@@ -99,7 +101,7 @@ internal final class CustomToolTipWindow: NSWindow {
         self.contentView = border
         self.contentView?.isHidden = false
 
-        self.backgroundColor = backgroundColor
+        self.backgroundColor = .clear
 
         if let mouseLoc = mouseLocation {
             reposition(relativeTo: mouseLoc, inWindowOf: toolTipOwner)
@@ -193,13 +195,14 @@ internal final class CustomToolTipWindow: NSWindow {
         guard let screenRect = ownerWindow.screen?.visibleFrame else { return }
         let ownerRect = ownerWindow.convertToScreen(rect)
 
-        let hSafetyPadding: CGFloat = 20
+        let hSafetyPadding: CGFloat = 10
 
         var tipRect = frame
         tipRect.origin = ownerRect.origin
 
         // Position tool tip window slightly below the owner on the screen
-        tipRect.origin.y -= tipRect.height + vOffset
+        //tipRect.origin.y -= tipRect.height + vOffset
+        tipRect.origin.y -= tipRect.height / 2.0 + vOffset
 
         if NSApp.userInterfaceLayoutDirection == .leftToRight {
             /*
@@ -241,24 +244,45 @@ internal final class CustomToolTipWindow: NSWindow {
     /// Provides thin border around the tool tip.
     private class BorderedView: NSView {
 
+        var backgroundColor: NSColor = .white
         var borderColor: NSColor = .black
         var borderCornerRadius: CGFloat = 8.0
 
-        override func draw(_ dirtyRect: NSRect) {
-            super.draw(dirtyRect)
+        override init(frame: NSRect) {
 
-            if self.borderCornerRadius > 0.0 {
-                self.wantsLayer = true
-                self.layer?.masksToBounds = true
-                self.layer?.cornerRadius = self.borderCornerRadius
-            }
+            super.init(frame: frame)
+        }
+
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        override func draw(_ dirtyRect: NSRect) {
 
             guard let context = NSGraphicsContext.current?.cgContext else {
                 return
             }
 
+            context.saveGState()
+
+            let clipPath: CGPath = CGPath(
+                roundedRect: self.frame,
+                cornerWidth: self.borderCornerRadius,
+                cornerHeight: self.borderCornerRadius,
+                transform: nil
+            )
+
+            context.addPath(clipPath)
+            context.setFillColor(self.backgroundColor.cgColor)
+            context.closePath()
+            context.fillPath()
+
+            context.addPath(clipPath)
             context.setStrokeColor(self.borderColor.cgColor)
-            context.stroke(self.frame, width: 2)
+            context.closePath()
+            context.strokePath()
+
+            context.restoreGState()
         }
     }
 }
