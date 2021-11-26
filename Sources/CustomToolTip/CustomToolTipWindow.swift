@@ -239,7 +239,7 @@ internal final class CustomToolTipWindow: NSWindow {
     /// Provides thin border around the tool tip.
     private class BorderedView: NSView {
 
-        private var borderColor: NSColor = .black
+        var borderColor: NSColor = .black
 
         override func draw(_ dirtyRect: NSRect) {
             super.draw(dirtyRect)
