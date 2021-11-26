@@ -71,6 +71,7 @@ internal final class CustomToolTipWindow: NSWindow {
         backgroundColor: NSColor,
         borderColor: NSColor,
         mouseLocation: CGPoint?) {
+
         toolTipView.setFrameOrigin(.init(x: margins.width, y: margins.height))
 
         let tipFrame = toolTipView.frame
@@ -83,7 +84,8 @@ internal final class CustomToolTipWindow: NSWindow {
             )
         )
 
-        let border = BorderedView(frame: borderFrame, borderColor: borderColor)
+        let border = BorderedView(frame: borderFrame)
+        self.borderColor = borderColor
         border.addSubview(toolTipView)
 
         super.init(
@@ -237,14 +239,16 @@ internal final class CustomToolTipWindow: NSWindow {
     /// Provides thin border around the tool tip.
     private class BorderedView: NSView {
 
-        override func draw(_ dirtyRect: NSRect, borderColor: NSColor) {
+        private var borderColor: NSColor = .black
+
+        override func draw(_ dirtyRect: NSRect) {
             super.draw(dirtyRect)
 
             guard let context = NSGraphicsContext.current?.cgContext else {
                 return
             }
 
-            context.setStrokeColor(borderColor)
+            context.setStrokeColor(self.borderColor.cgColor)
             context.stroke(self.frame, width: 2)
         }
     }
