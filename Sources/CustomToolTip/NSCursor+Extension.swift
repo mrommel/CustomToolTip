@@ -1,36 +1,33 @@
 import AppKit
 
-fileprivate var cachedCursorRect = CGRect.zero
-fileprivate weak var cachedCursorImage: NSImage? = nil
+private var cachedCursorRect = CGRect.zero
+fileprivate weak var cachedCursorImage: NSImage?
 
 // -------------------------------------
-internal extension NSCursor
-{
+internal extension NSCursor {
     private var maskAlphaThreshold: CGFloat { 0.5 }
-    
+
     // -------------------------------------
     /*
      Gets the smallest `CGRect` that fully encloses the non-transparent
      portions of the mouse cursor's image.
      */
-    func frame(for location: CGPoint) -> CGRect
-    {
+    func frame(for location: CGPoint) -> CGRect {
         let hotSpot = self.hotSpot
-                
+
         /*
          First try to get cursorRect the "right" way... which is to extract the
          minimum CGRect that contains the masked portions (ie. alpha
          channel > some threshold). This can fail if the image's bitmap isn't
          in RGBA format.
          */
-        if var cursorRect = minMaskedImageRect
-        {
+        if var cursorRect = minMaskedImageRect {
             cursorRect.origin.x += location.x - hotSpot.x
             cursorRect.origin.y = location.y - cursorRect.minY + hotSpot.y
             cursorRect.origin.y -= cursorRect.height
             return cursorRect
         }
-        
+
         /*
          If getting the proper cursorRect from the actual image fails, we fall
          back on some unfortunately excessive special cases that I determined by
@@ -38,23 +35,21 @@ internal extension NSCursor
          */
         return specialCasedMinMaskFrame(for: location)
     }
-    
+
     // -------------------------------------
-    private var minMaskedImageRect: CGRect?
-    {
+    private var minMaskedImageRect: CGRect? {
         if cachedCursorImage === image { return cachedCursorRect }
-        
+
         guard let rect = image.minMaskRect(alphaThreshold: maskAlphaThreshold)
         else { return nil }
-        
+
         cachedCursorImage = image
         cachedCursorRect = rect
         return rect
     }
-    
+
     // -------------------------------------
-    private func specialCasedMinMaskFrame(for location: CGPoint) -> CGRect
-    {
+    private func specialCasedMinMaskFrame(for location: CGPoint) -> CGRect {
         let hotSpot = self.hotSpot
         let size = image.size
         var cursorRect = CGRect(
@@ -64,27 +59,26 @@ internal extension NSCursor
             ),
             size: size
         )
-        
-        switch self
-        {
+
+        switch self {
             case .arrow, .disappearingItem, .operationNotAllowed,
                  .dragCopy, .dragLink:
                 cursorRect.origin.x -= hotSpot.x / 2
                 cursorRect.origin.y += hotSpot.y * 2
                 cursorRect.size.width -= hotSpot.x * 2
                 cursorRect.size.height -= hotSpot.y
-                
+
             case .pointingHand:
                 cursorRect.origin.x -= hotSpot.x / 2
                 cursorRect.origin.y += hotSpot.y * 2
                 cursorRect.size.width -= hotSpot.x * 2
                 cursorRect.size.height -= hotSpot.y * 1.5
-                
+
             case .iBeam:
                 cursorRect.origin.x -= hotSpot.x / 2
                 cursorRect.origin.y += hotSpot.y
                 cursorRect.size.height += size.height * 0.1
-                
+
             case .crosshair:
                 cursorRect.origin.x -= size.width / 3
                 cursorRect.origin.y += size.height * 2 / 3
@@ -95,17 +89,17 @@ internal extension NSCursor
                 cursorRect.origin.x -= hotSpot.x / 2
                 cursorRect.origin.y += hotSpot.y * 3 / 2
                 cursorRect.size.height -= hotSpot.y
-                
+
             case .resizeLeft:
                 cursorRect.origin.x -= (size.width - hotSpot.x) * 2 / 3
                 cursorRect.origin.y += hotSpot.y * 4 / 3
                 cursorRect.size.height -= hotSpot.y / 2
-                
+
             case .resizeRight:
                 cursorRect.origin.x -= (size.width - hotSpot.x) * 1 / 3
                 cursorRect.origin.y += hotSpot.y * 4 / 3
                 cursorRect.size.height -= hotSpot.y / 2
-                
+
             case .resizeLeftRight, .resizeUpDown:
                 cursorRect.origin.x -= size.width / 3
                 cursorRect.origin.y += size.height * 2 / 3
@@ -116,12 +110,12 @@ internal extension NSCursor
                 cursorRect.origin.x -= (size.width - hotSpot.x) * 2 / 3
                 cursorRect.origin.y += hotSpot.y * 5 / 3
                 cursorRect.size.height -= (size.height - hotSpot.y) * 4 / 5
-                
+
             case .resizeDown:
                 cursorRect.origin.x -= (size.width - hotSpot.x) * 2 / 3
                 cursorRect.origin.y += hotSpot.y * 4 / 3
                 cursorRect.size.height -= (size.height - hotSpot.y)
-                
+
             case .contextualMenu:
                 cursorRect.origin.x -= hotSpot.x / 2
                 cursorRect.origin.y += hotSpot.y * 5
@@ -133,7 +127,7 @@ internal extension NSCursor
                 cursorRect.origin.y += hotSpot.y * 3
                 cursorRect.size.width -= (size.width - hotSpot.x) * 2 / 3
                 cursorRect.size.height -= hotSpot.y * 3 / 2
-                
+
             default:
                 /*
                  Unknown cursor type - probably a user defined one.
@@ -142,7 +136,7 @@ internal extension NSCursor
                  */
                 break
         }
-        
+
         return cursorRect
     }
 }

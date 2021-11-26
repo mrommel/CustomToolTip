@@ -1,18 +1,17 @@
 import AppKit
 import SwizzleHelper
 
-fileprivate let bundleID = Bundle.main.bundleIdentifier ?? "com.CustomToolTips"
-fileprivate let toolTipKeyTag = bundleID + "CustomToolTips"
-fileprivate let customToolTipTag = [toolTipKeyTag: true]
-fileprivate let dispatchQueue = DispatchQueue(
+private let bundleID = Bundle.main.bundleIdentifier ?? "com.CustomToolTips"
+private let toolTipKeyTag = bundleID + "CustomToolTips"
+private let customToolTipTag = [toolTipKeyTag: true]
+private let dispatchQueue = DispatchQueue(
     label: toolTipKeyTag,
     qos: .background
 )
 
-// MARK:- NSView extension
+// MARK: - NSView extension
 // -------------------------------------
-public extension NSView
-{
+public extension NSView {
     // -------------------------------------
     /**
      Adds a custom tool tip to the receiver.  If set to `nil`, the custom tool
@@ -20,42 +19,35 @@ public extension NSView
      
      This view's `frame.size` will determine the size of the tool tip window
      */
-    public var customToolTip: NSView?
-    {
+    var customToolTip: NSView? {
         get { toolTipControl?.toolTipView }
-        set
-        {
+        set {
             Self.initializeCustomToolTips()
 
-            if let newValue = newValue
-            {
+            if let newValue = newValue {
                 addCustomToolTipTrackingArea()
                 var current = toolTipControl ?? ToolTipControl(hostView: self)
                 current.toolTipView = newValue
                 toolTipControl = current
-            }
-            else { toolTipControl = nil }
+            } else { toolTipControl = nil }
         }
     }
-    
+
     // -------------------------------------
     /**
      Get/Set the margins for the tool tip's content within the tool tip window.
      */
-    public var customToolTipMargins: CGSize
-    {
-        get
-        {
+    var customToolTipMargins: CGSize {
+        get {
             toolTipControl?.toolTipMargins ?? CustomToolTip.defaultMargins
         }
-        set
-        {
+        set {
             var control = toolTipControl ?? ToolTipControl(hostView: self)
             control.toolTipMargins = newValue
             toolTipControl = control
         }
     }
-    
+
     // -------------------------------------
     /**
      Attach a custom tool tip to the receiver that will display `string`
@@ -65,10 +57,9 @@ public extension NSView
         - string: `String` containing the textual content of the tool tip
         - font: `NSFont` to be used when rendering the tool tip.
      */
-    public func addCustomToolTip(
+    func addCustomToolTip(
         from string: String,
-        with font: NSFont? = .toolTipsFont(ofSize: 10))
-    {
+        with font: NSFont? = .toolTipsFont(ofSize: 10)) {
         addCustomToolTip(
             from:
                 NSAttributedString(
@@ -77,7 +68,7 @@ public extension NSView
                 )
         )
     }
-    
+
     // -------------------------------------
     /**
      Attach a custom tool tip to the receiver to display an attributed string.
@@ -85,45 +76,44 @@ public extension NSView
      - Parameter attributedString: an `NSAttributedString` to display in the
         tool tip.
      */
-    public func addCustomToolTip(from attributedString: NSAttributedString) {
+    func addCustomToolTip(from attributedString: NSAttributedString) {
         customToolTip = NSTextField(labelWithAttributedString: attributedString)
     }
-    
+
     // -------------------------------------
-    public enum CustomToolTipScaling
-    {
+    enum CustomToolTipScaling {
         /// Use the image size as is.
         case none
-        
+
         /**
          Scale the image horizontally to a specified `width`.  The image's
          `height` will be used as is.
          */
         case toWidth(_ width: CGFloat)
-        
+
         /**
          Scale the image vertically to a specified `height`.  The image's
          `width` will be used as is.
          */
         case toHeight(_ height: CGFloat)
-        
+
         /**
          Scale the images `width` and `height` independently to the specified
          `size`.
          */
         case toSize(width: CGFloat, height: CGFloat)
-        
+
         /**
          Scale the image by the specified `factor`, preserving its aspect ratio
          */
         case by(factor: CGFloat)
-        
+
         /**
          Scale the image to fit the specified `size`, preserving its aspect rato
          */
         case toFit(width: CGFloat, height: CGFloat)
     }
-    
+
     // -------------------------------------
     /**
      Attach a custom tool tip to the receiver to display an image.
@@ -133,35 +123,33 @@ public extension NSView
         - scaling: `CustomToolTipScaling` specifying how the image should be
             scaled.  If not specified, the default is `.none`.
      */
-    public func addCustomToolTip(
+    func addCustomToolTip(
         from image: NSImage,
-        scaling: CustomToolTipScaling = .none)
-    {
+        scaling: CustomToolTipScaling = .none) {
         let imageView = NSImageView()
         imageView.imageScaling = .scaleAxesIndependently
-        
+
         var size: CGSize
-        switch scaling
-        {
+        switch scaling {
             case .none:
                 size = image.size
-                
+
             case .toWidth(let width):
                 size = .init(width: abs(width), height: image.size.height)
-                
+
             case .toHeight(let height):
                 size = .init(width: image.size.width, height: abs(height))
-                
+
             case let .toSize(width, height):
                 size = .init(width: abs(width), height: abs(height))
-                
+
             case .by(let factor):
                 let factor = abs(factor)
                 size = .init(
                     width: image.size.width * factor,
                     height: image.size.height * factor
                 )
-                
+
             case let .toFit(width, height):
                 let fitSize = CGSize(width: abs(width), height: abs(height))
                 imageView.imageScaling = .scaleProportionallyUpOrDown
@@ -170,23 +158,20 @@ public extension NSView
 
         imageView.setFrameSize(size)
         imageView.image = image
-        
+
         customToolTip = imageView
     }
-    
+
     // -------------------------------------
     /**
      Get/Set the margins for the tool tip's content within the tool tip window.
      */
-    public var customToolTipBackgroundColor: NSColor
-    {
-        get
-        {
+    var customToolTipBackgroundColor: NSColor {
+        get {
             toolTipControl?.toolTipBackgroundColor
                 ?? CustomToolTip.defaultBackgroundColor
         }
-        set
-        {
+        set {
             var control = toolTipControl ?? ToolTipControl(hostView: self)
             control.toolTipBackgroundColor = newValue
             toolTipControl = control
@@ -197,37 +182,33 @@ public extension NSView
     /**
      Gets/sets the `ToolTipControl` instance associated with the receiving view
      */
-    fileprivate var toolTipControl: ToolTipControl?
-    {
+    fileprivate var toolTipControl: ToolTipControl? {
         get { associatedValues[toolTipKeyTag] as? ToolTipControl }
         set { associatedValues[toolTipKeyTag] = newValue }
     }
-    
-    // MARK:- Showing and Hiding Tool Tip
+
+    // MARK: - Showing and Hiding Tool Tip
     // -------------------------------------
     /**
      Controls how many seconds the mouse must be motionless within the tracking
      area in order to show the tool tip.
      */
     private var customToolTipDelay: TimeInterval { 1 /* seconds */ }
-    
+
     // -------------------------------------
     /**
      Displays the tool tip now.
      */
-    private func showToolTip()
-    {
+    private func showToolTip() {
         guard var control = toolTipControl else { return }
         defer { toolTipControl = control }
-        
-        guard let toolTipView = control.toolTipView else
-        {
+
+        guard let toolTipView = control.toolTipView else {
             control.isVisible = false
             return
         }
-        
-        if !control.isVisible
-        {
+
+        if !control.isVisible {
             control.isVisible = true
             control.toolTipWindow = CustomToolTipWindow.makeAndShow(
                 toolTipView: toolTipView,
@@ -238,7 +219,7 @@ public extension NSView
             )
         }
     }
-    
+
     // -------------------------------------
     /**
      Hides the tool tip now.
@@ -247,21 +228,20 @@ public extension NSView
         set to its location in the receiving view's *window* coorindates.  If
         the mouse is not in the tracking area, set to `nil`.
      */
-    private func hideToolTip(mouseLocation: CGPoint?)
-    {
+    private func hideToolTip(mouseLocation: CGPoint?) {
         guard var control = toolTipControl else { return }
-        
+
         control.mouseLocation = mouseLocation
         control.isVisible = false
         let window = control.toolTipWindow
-        
+
         control.toolTipWindow = nil
         window?.orderOut(self)
         control.toolTipWindow = nil
-        
+
         toolTipControl = control
     }
-    
+
     // -------------------------------------
     /**
      Schedules to potentially show the tool tip after `delay` seconds.
@@ -282,12 +262,10 @@ public extension NSView
      */
     private func scheduleShowToolTip(
         delay: TimeInterval,
-        mouseLocation: CGPoint?)
-    {
+        mouseLocation: CGPoint?) {
         guard var control = toolTipControl else { return }
-        
-        if let mouseLoc = mouseLocation
-        {
+
+        if let mouseLoc = mouseLocation {
             control.mouseLocation = mouseLoc
             toolTipControl = control
         }
@@ -297,15 +275,14 @@ public extension NSView
             [weak self] in self?.scheduledShowToolTip()
         }
     }
-    
+
     // -------------------------------------
     /**
      Display the tool tip now, *if* the mouse is in the tracking area and has
      not moved for at least `customToolTipDelay` seconds.  Otherwise, schedule
      to check again after a short delay.
      */
-    private func scheduledShowToolTip()
-    {
+    private func scheduledShowToolTip() {
         let repeatDelay: TimeInterval = 0.1
         /*
          control.mouseEntered is set to nil when exiting the tracking area,
@@ -314,14 +291,11 @@ public extension NSView
         guard let control = self.toolTipControl,
               let mouseEntered = control.mouseEntered
         else { return }
-        
+
         if !control.isVisible,
-           Date().timeIntervalSince(mouseEntered) >= customToolTipDelay
-        {
-            DispatchQueue.main.async
-            { [weak self] in
-                if let self = self
-                {
+           Date().timeIntervalSince(mouseEntered) >= customToolTipDelay {
+            DispatchQueue.main.async { [weak self] in
+                if let self = self {
                     self.showToolTip()
                     self.scheduleShowToolTip(
                         delay: repeatDelay,
@@ -329,11 +303,10 @@ public extension NSView
                     )
                 }
             }
-        }
-        else { scheduleShowToolTip(delay: repeatDelay, mouseLocation: nil) }
+        } else { scheduleShowToolTip(delay: repeatDelay, mouseLocation: nil) }
     }
 
-    // MARK:- Tracking Area maintenance
+    // MARK: - Tracking Area maintenance
     // -------------------------------------
     /**
      Adds a tracking area encompassing the receiver's bounds that will be used
@@ -342,8 +315,7 @@ public extension NSView
      new tracking area is set. This method should only be called when a new
      tool tip is attached to the receiver.
      */
-    private func addCustomToolTipTrackingArea()
-    {
+    private func addCustomToolTipTrackingArea() {
         if let ta = trackingAreaForCustomToolTip {
             removeTrackingArea(ta)
         }
@@ -357,33 +329,29 @@ public extension NSView
             )
         )
     }
-    
+
     // -------------------------------------
     /**
      Returns the custom tool tip tracking area for the receiver.
      */
-    private var trackingAreaForCustomToolTip: NSTrackingArea?
-    {
+    private var trackingAreaForCustomToolTip: NSTrackingArea? {
         trackingAreas.first {
             $0.owner === self && $0.userInfo?[toolTipKeyTag] != nil
         }
     }
-    
-    // MARK:- Swizzled Methods
+
+    // MARK: - Swizzled Methods
     // -------------------------------------
     /**
      Updates the custom tooltip tracking aread when `updateTrackingAreas` is
      called.
      */
-    @objc private func updateTrackingAreas_CustomToolTip()
-    {
-        if let ta = trackingAreaForCustomToolTip
-        {
+    @objc private func updateTrackingAreas_CustomToolTip() {
+        if let ta = trackingAreaForCustomToolTip {
             removeTrackingArea(ta)
             addTrackingArea(ta.updateRect(with: self.bounds))
-        }
-        else { addCustomToolTipTrackingArea() }
-        
+        } else { addCustomToolTipTrackingArea() }
+
         callReplacedMethod(for: #selector(self.updateTrackingAreas))
     }
 
@@ -392,26 +360,24 @@ public extension NSView
      Schedules potentially showing the tool tip when the `mouseEntered` is
      called.
      */
-    @objc private func mouseEntered_CustomToolTip(with event: NSEvent)
-    {
+    @objc private func mouseEntered_CustomToolTip(with event: NSEvent) {
         scheduleShowToolTip(
             delay: customToolTipDelay,
             mouseLocation: event.locationInWindow
         )
-        
+
         callReplacedEventMethod(
             for: #selector(self.mouseEntered(with:)),
             with: event
         )
     }
-    
+
     // -------------------------------------
     /**
      Hides the tool tip if it's visible when `mouseExited` is called, cancelling
      further `async` chaining that checks to show it.
      */
-    @objc private func mouseExited_CustomToolTip(with event: NSEvent)
-    {
+    @objc private func mouseExited_CustomToolTip(with event: NSEvent) {
         hideToolTip(mouseLocation: nil)
 
         callReplacedEventMethod(
@@ -419,23 +385,22 @@ public extension NSView
             with: event
         )
     }
-    
+
     // -------------------------------------
     /**
      Hides the tool tip if it's visible when `mousedMoved` is called, and
      resets the time for it to be displayed again.
      */
-    @objc private func mouseMoved_CustomToolTip(with event: NSEvent)
-    {
+    @objc private func mouseMoved_CustomToolTip(with event: NSEvent) {
         hideToolTip(mouseLocation: event.locationInWindow)
-        
+
         callReplacedEventMethod(
             for: #selector(self.mouseMoved(with:)),
             with: event
         )
     }
-        
-    // MARK:- Swizzle initialization
+
+    // MARK: - Swizzle initialization
     // -------------------------------------
     /**
      Swizzle methods if they have not already been swizzed for the current
@@ -444,26 +409,24 @@ public extension NSView
     static func initializeCustomToolTips() {
         if !isSwizzled { swizzleCustomToolTipMethods() }
     }
-    
+
     // -------------------------------------
     /**
      `true` if the current `NSView` subclass has already been swizzled;
      otherwise, `false`
      */
-    private static var isSwizzled: Bool
-    {
+    private static var isSwizzled: Bool {
         return nil != Self.implementation(
             for: #selector(self.mouseMoved(with:))
         )
     }
-    
+
     // -------------------------------------
     /**
      Replace the implementatons of certain methods in the current subclass of
      `NSView` with custom implementations to implement custom tool tips.
      */
-    private static func swizzleCustomToolTipMethods()
-    {
+    private static func swizzleCustomToolTipMethods() {
         replaceMethod(
             #selector(self.updateTrackingAreas),
             with: #selector(self.updateTrackingAreas_CustomToolTip)
@@ -482,4 +445,3 @@ public extension NSView
         )
     }
  }
-

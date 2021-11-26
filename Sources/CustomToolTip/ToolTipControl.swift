@@ -5,33 +5,32 @@ import AppKit
  Data structure to hold information used for holding the tool tip and for
  controlling when to show or hide it.
  */
-internal struct ToolTipControl
-{
+internal struct ToolTipControl {
     /**
      `Date` when mouse was last moved within the tracking area.  Should be
      `nil` when the mouse is not in the tracking area.
      */
     private(set) var mouseEntered: Date?
-    
+
     var mouseLocation: CGPoint? {
         didSet { mouseEntered = mouseLocation == nil ? nil : Date() }
     }
-    
+
     /// View to which the custom tool tip is attached
     weak var onwerView: NSView?
-    
+
     /// The content view of the tool tip
     var toolTipView: NSView?
-    
+
     /// `true` when the tool tip is currently displayed.  `false` otherwise.
     var isVisible: Bool = false
-    
+
     /**
      The tool tip's window.  Should be `nil` when the tool tip is not being
      shown.
      */
-    var toolTipWindow: NSWindow? = nil
-    
+    var toolTipWindow: NSWindow?
+
     /**
      The tool tip's window margins.
      
@@ -41,15 +40,14 @@ internal struct ToolTipControl
      and bottom edges of the tool tip's view frame and the corresponding edges of the tool tip window.
      */
     var toolTipMargins: CGSize = CustomToolTip.defaultMargins
-    
+
     /// Tool tip window's background color
     var toolTipBackgroundColor: NSColor = CustomToolTip.defaultBackgroundColor
-    
+
     init(
         mouseEntered: Date? = nil,
         hostView: NSView,
-        toolTipView: NSView? = nil)
-    {
+        toolTipView: NSView? = nil) {
         self.mouseEntered = mouseEntered
         self.onwerView = hostView
         self.toolTipView = toolTipView

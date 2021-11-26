@@ -9,7 +9,7 @@ let package = Package(
     products: [
         .library(
             name: "CustomToolTip",
-            targets: ["CustomToolTip"]),
+            targets: ["CustomToolTip"])
     ],
     dependencies: [
         .package(url: "https://github.com/mrommel/SwizzleHelper.git", .revision("63eea482d9fab8a7c929298ce39a436ff13efb9c"))
@@ -22,6 +22,6 @@ let package = Package(
             dependencies: ["SwizzleHelper"]),
         .testTarget(
             name: "CustomToolTipTests",
-            dependencies: ["CustomToolTip"]),
+            dependencies: ["CustomToolTip"])
     ]
 )

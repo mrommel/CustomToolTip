@@ -47,7 +47,8 @@ You can also set the default values to use when you don't specify them per view:
 
 ```swift
 CustomToolTip.defaultMargins = CGSize(width: 2, height: 2)
-CustomToolTip.defaultBackColor = .controlColor
+CustomToolTip.defaultBackgroundColor = .controlColor
+CustomToolTip.defaultBorderColor = .black
 ```
 
 ## Conveniences
