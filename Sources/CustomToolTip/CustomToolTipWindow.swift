@@ -3,6 +3,7 @@ import AppKit
 public var defaultMargins: CGSize = CGSize(width: 5, height: 5)
 public var defaultBackgroundColor: NSColor = .windowBackgroundColor
 public var defaultBorderColor: NSColor = .black
+public var defaultBorderCornerRadius: CGFloat = 8.0
 
 // MARK: - Custom Tool Tip Window
 // -------------------------------------
@@ -86,6 +87,7 @@ internal final class CustomToolTipWindow: NSWindow {
 
         let border = BorderedView(frame: borderFrame)
         border.borderColor = borderColor
+        border.borderCornerRadius = defaultBorderCornerRadius
         border.addSubview(toolTipView)
 
         super.init(
@@ -240,9 +242,16 @@ internal final class CustomToolTipWindow: NSWindow {
     private class BorderedView: NSView {
 
         var borderColor: NSColor = .black
+        var borderCornerRadius: CGFloat = 8.0
 
         override func draw(_ dirtyRect: NSRect) {
             super.draw(dirtyRect)
+
+            if self.borderCornerRadius > 0.0 {
+                self.wantsLayer = true
+                self.layer.masksToBounds = true
+                self.layer.cornerRadius = self.borderCornerRadius
+            }
 
             guard let context = NSGraphicsContext.current?.cgContext else {
                 return
